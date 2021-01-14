@@ -45,3 +45,4 @@ jobs:
             python pipeline.py
             # Run flow
             prefect run flow --name=Hydat-ETL --project=hydat-file-upload
+            wait
