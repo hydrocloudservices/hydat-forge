@@ -35,11 +35,12 @@ def verify_if_to_date(path):
                      'region_name': 'us-east-2'}
     config_kwargs = {'max_pool_connections': 30}
 
-    s3 = s3fs.S3FileSystem(client_kwargs=client_kwargs,
+    s3 = s3fs.S3FileSystem(profile='default',
+                           client_kwargs=client_kwargs,
                            config_kwargs=config_kwargs)  # public read
 
     return s3.exists(os.path.join('s3://hydat-sqlite',
-                        basename))
+                                  basename))
 
 @task
 def download_hydat_file(path):
@@ -56,7 +57,8 @@ def download_hydat_file(path):
                      'region_name': 'us-east-2'}
     config_kwargs = {'max_pool_connections': 30}
 
-    s3 = s3fs.S3FileSystem(client_kwargs=client_kwargs,
+    s3 = s3fs.S3FileSystem(profile='default',
+                           client_kwargs=client_kwargs,
                            config_kwargs=config_kwargs)  # public read
 
     s3.put(os.path.join('/tmp',
