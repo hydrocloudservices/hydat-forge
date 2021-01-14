@@ -1,0 +1,9 @@
+s3fs
+bs4
+dask
+distributed
+fsspec
+numcodecs
+prefect
+xarray
+zarr
