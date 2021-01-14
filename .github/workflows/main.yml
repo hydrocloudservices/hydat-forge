@@ -43,3 +43,4 @@ jobs:
             prefect agent local start &
             # Register flow
             python pipeline.py
+            prefect run flow --name=Hydat-ETL --project=hydat-file-upload
