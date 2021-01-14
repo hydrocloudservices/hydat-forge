@@ -71,7 +71,24 @@ def download_hydat_file(path):
     return path
 
 
-with Flow("Hydat-ETL") as flow:
+from prefect.schedules import IntervalSchedule
+from datetime import datetime, timedelta
+
+# schedule to run every 12 hours
+schedule = IntervalSchedule(
+    start_date=datetime.utcnow() + timedelta(seconds=1),
+    interval=timedelta(hours=12),
+    end_date=datetime.utcnow() + timedelta(seconds=20))
+
+# import pendulum
+#
+# from prefect.schedules import Schedule
+# from prefect.schedules.clocks import DatesClock
+#
+# schedule = Schedule(
+#     clocks=[DatesClock([pendulum.now().add(seconds=1)])])
+
+with Flow("Hydat-ETL", schedule=schedule) as flow:
 
     url = 'https://collaboration.cmc.ec.gc.ca/cmc/hydrometrics/www/'
     ext = 'zip'
@@ -83,4 +100,5 @@ with Flow("Hydat-ETL") as flow:
         download_hydat_file(path)
 
 flow.register(project_name="hydat-file-upload")
-flow.run()
+flow.run_agent()
+# flow.run()

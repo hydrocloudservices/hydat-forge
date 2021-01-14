@@ -39,5 +39,5 @@ jobs:
             # Register flow
             # Test
             python pipeline.py
-            prefect run flow --name=Hydat-ETL --project=hydat-file-upload
+#            prefect run flow --name=Hydat-ETL --project=hydat-file-upload
 
