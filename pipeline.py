@@ -1,13 +1,10 @@
 from prefect import task, Flow, case
-from prefect.agent.local import LocalAgent
 
 import urllib.request
 import requests
 from bs4 import BeautifulSoup
 import s3fs
 import os
-
-LocalAgent().start()
 
 
 def get_url_paths(url,
