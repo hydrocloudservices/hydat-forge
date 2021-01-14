@@ -1,5 +1,7 @@
 from prefect import task, Flow, case
 from prefect.executors import LocalDaskExecutor
+import time
+from prefect.client.client import Client
 
 import urllib.request
 import requests
@@ -69,7 +71,7 @@ def download_hydat_file(path):
     return path
 
 
-with Flow("Hydat-ETL", executor=LocalDaskExecutor()) as flow:
+with Flow("Hydat-ETL") as flow:
 
     url = 'https://collaboration.cmc.ec.gc.ca/cmc/hydrometrics/www/'
     ext = 'zip'
@@ -81,4 +83,3 @@ with Flow("Hydat-ETL", executor=LocalDaskExecutor()) as flow:
         download_hydat_file(path)
 
 flow.register(project_name="hydat-file-upload")
-flow.run()
