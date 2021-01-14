@@ -39,9 +39,9 @@ jobs:
         run: |
             # Login
             prefect auth login --token ${{ secrets.PREFECT_ACCESS_TOKEN }}
-            export PREFECT__CLOUD__AGENT__AUTH_TOKEN=${{ secrets.PREFECT_CLOUD_AGENT_AUTH_TOKEN }}
-            prefect agent local start &
+            # export PREFECT__CLOUD__AGENT__AUTH_TOKEN=${{ secrets.PREFECT_CLOUD_AGENT_AUTH_TOKEN }}
+            # prefect agent local start &
             # Register flow
             python pipeline.py
             # Run flow
-            nohup prefect run flow --name=Hydat-ETL --project=hydat-file-upload
+            prefect run flow --name=Hydat-ETL --project=hydat-file-upload
