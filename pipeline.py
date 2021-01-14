@@ -81,4 +81,4 @@ with Flow("Hydat-ETL", executor=LocalDaskExecutor()) as flow:
         download_hydat_file(path)
 
 flow.register(project_name="hydat-file-upload")
-
+flow.run()
