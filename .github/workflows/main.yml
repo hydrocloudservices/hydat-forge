@@ -36,6 +36,7 @@ jobs:
             # export PREFECT__CLOUD__AGENT__AUTH_TOKEN=${{ secrets.PREFECT_CLOUD_AGENT_AUTH_TOKEN }}
             # prefect agent local start &
             # Register flow
+            # Test
             python pipeline.py
             prefect run flow --name=Hydat-ETL --project=hydat-file-upload
             sleep 20 &
