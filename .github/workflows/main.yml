@@ -41,10 +41,8 @@ jobs:
             prefect auth login --token ${{ secrets.PREFECT_ACCESS_TOKEN }}
             export PREFECT__CLOUD__AGENT__AUTH_TOKEN=${{ secrets.PREFECT_CLOUD_AGENT_AUTH_TOKEN }}
             prefect agent local start &
-            _pid=$!
-            echo "Pid $_pid"
+            sleep 10
             # Register flow
             python pipeline.py
-            prefect run flow --name=Hydat-ETL --project=hydat-file-upload
-            kill -9 $_pid
+            prefect run cloud --name=Hydat-ETL --project=hydat-file-upload
 
