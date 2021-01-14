@@ -44,5 +44,5 @@ jobs:
             sleep 10
             # Register flow
             python pipeline.py
-            prefect run cloud --name=Hydat-ETL --project=hydat-file-upload
+            prefect run flow --name=Hydat-ETL --project=hydat-file-upload
 
