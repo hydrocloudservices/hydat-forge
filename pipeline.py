@@ -1,7 +1,5 @@
-from prefect import task, Flow, case
-from prefect.executors import LocalDaskExecutor
-import time
-from prefect.client.client import Client
+from prefect import task, Flow, case, agent
+import prefect
 
 import urllib.request
 import requests
@@ -100,5 +98,8 @@ with Flow("Hydat-ETL", schedule=schedule) as flow:
         download_hydat_file(path)
 
 flow.register(project_name="hydat-file-upload")
-flow.run_agent()
+
+
+agent = agent.local.LocalAgent(max_polls=20)
+agent.start()
 # flow.run()
