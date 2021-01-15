@@ -100,6 +100,5 @@ with Flow("Hydat-ETL", schedule=schedule) as flow:
 flow.register(project_name="hydat-file-upload")
 
 
-agent = agent.local.LocalAgent(max_polls=20)
+agent = agent.local.LocalAgent(max_polls=30)
 agent.start()
-# flow.run()
