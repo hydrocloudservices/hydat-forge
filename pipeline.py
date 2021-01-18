@@ -86,7 +86,25 @@ schedule = IntervalSchedule(
 # schedule = Schedule(
 #     clocks=[DatesClock([pendulum.now().add(seconds=1)])])
 
+temp_config = {
+    "cloud.agent.auth_token": prefect.config.cloud.agent.auth_token,
+}
+
+from prefect.utilities.configuration import set_temporary_config
+
+
 with Flow("Hydat-ETL", schedule=schedule) as flow:
+
+    with set_temporary_config(temp_config):
+        if flow.run_config is not None:
+            labels = list(flow.run_config.labels or ())
+        elif flow.environment is not None:
+            labels = list(flow.environment.labels or ())
+        else:
+            labels = []
+        agent = agent.local.LocalAgent(
+            labels=labels, max_polls=30
+        )
 
     url = 'https://collaboration.cmc.ec.gc.ca/cmc/hydrometrics/www/'
     ext = 'zip'
@@ -98,7 +116,6 @@ with Flow("Hydat-ETL", schedule=schedule) as flow:
         download_hydat_file(path)
 
 flow.register(project_name="hydat-file-upload")
-
-
-agent = agent.local.LocalAgent(max_polls=30)
+# flow.run_agent()
+# # agent = agent.local.LocalAgent()
 agent.start()
