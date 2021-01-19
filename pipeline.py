@@ -1,24 +1,13 @@
 from prefect import task, Flow, case, agent
 import prefect
-
+from prefect.schedules import IntervalSchedule
+from datetime import datetime, timedelta
 import urllib.request
-import requests
-from bs4 import BeautifulSoup
 import s3fs
 import os
-
-
-def get_url_paths(url,
-                  ext='',
-                  params={}):
-    response = requests.get(url, params=params)
-    if response.ok:
-        response_text = response.text
-    else:
-        return response.raise_for_status()
-    soup = BeautifulSoup(response_text, 'html.parser')
-    parent = [url + node.get('href') for node in soup.find_all('a') if node.get('href').endswith(ext)]
-    return parent
+from pipeline.models.hydat import get_available_stations_from_hydat, import_hydat_to_parquet, verify_data_type_exists
+from prefect.utilities.configuration import set_temporary_config
+from pipeline.utils import get_url_paths
 
 
 @task
@@ -68,9 +57,15 @@ def download_hydat_file(path):
                         basename))
     return path
 
+@task
+def update_hydat_database():
+    stations_list = get_available_stations_from_hydat()
+    #
+    # results = []
+    for station_number in stations_list[0:10]:
+        if verify_data_type_exists(station_number, 'Flow'):
+            import_hydat_to_parquet(station_number)
 
-from prefect.schedules import IntervalSchedule
-from datetime import datetime, timedelta
 
 # schedule to run every 12 hours
 schedule = IntervalSchedule(
@@ -89,8 +84,6 @@ schedule = IntervalSchedule(
 temp_config = {
     "cloud.agent.auth_token": prefect.config.cloud.agent.auth_token,
 }
-
-from prefect.utilities.configuration import set_temporary_config
 
 
 with Flow("Hydat-ETL", schedule=schedule) as flow:
@@ -114,8 +107,7 @@ with Flow("Hydat-ETL", schedule=schedule) as flow:
 
     with case(cond, False):
         download_hydat_file(path)
+        update_hydat_database()
 
 flow.register(project_name="hydat-file-upload")
-# flow.run_agent()
-# # agent = agent.local.LocalAgent()
 agent.start()

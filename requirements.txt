@@ -7,3 +7,6 @@ numcodecs
 prefect
 xarray
 zarr
+sqlalchemy
+pyarrow
+geopandas
