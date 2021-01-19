@@ -58,7 +58,7 @@ def download_hydat_file(path):
     return path
 
 @task
-def update_hydat_database():
+def update_hydat_database(path):
     stations_list = get_available_stations_from_hydat()
     #
     # results = []
@@ -106,8 +106,8 @@ with Flow("Hydat-ETL", schedule=schedule) as flow:
     cond = verify_if_to_date(path)
 
     with case(cond, False):
-        download_hydat_file(path)
-        update_hydat_database()
+        path = download_hydat_file(path)
+        update_hydat_database(path)
 
 flow.register(project_name="hydat-file-upload")
 agent.start()
