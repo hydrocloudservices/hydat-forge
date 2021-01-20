@@ -286,7 +286,7 @@ def import_hydat_to_parquet(station_number):
     # if not is_id_bassin_in_db(station):
 
     try:
-        project_root = os.path.dirname(os.path.dirname(__file__))
+        project_root = '/tmp'
         data_dir = os.path.join(project_root, 'data')
         if not os.path.exists(data_dir):
             os.makedirs(data_dir)
@@ -377,7 +377,7 @@ if __name__ == "__main__":
                                          'region_name': 'us-east-1'},
                        "profile": "default"}
 
-    project_root = os.path.dirname(os.path.dirname(__file__))
+    project_root = '/tmp'
     data_dir = os.path.join(project_root, 'data')
     stations_list = get_available_stations_from_hydat()
     #
