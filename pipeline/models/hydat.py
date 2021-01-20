@@ -346,49 +346,6 @@ def import_hydat_to_parquet(station_number):
         print(e)
 
 
-def import_hydat_to_zarr(station):
-    """
-    :param station:
-    :return:
-    """
-
-    # if not is_id_bassin_in_db(station):
-
-    try:
-        sta = StationParserHYDAT(station, 'Flow')
-        b = Basin(sta)
-
-        # fname_basin = '/home/slanglois/Documents/HQ/data/zarr'
-        # # Basin
-        # if os.path.isfile(fname_basin):
-        #     b.basin_table.to_xarray()(fname_basin,
-        #                              engine='fastparquet',
-        #                              compression='gzip',
-        #                              append=True)
-        # else:
-        #     b.basin_table.to_parquet(fname_basin,
-        #                              engine='fastparquet',
-        #                              compression='gzip')
-        #
-        # fname_context = '/home/slanglois/Documents/HQ/data/context/context.parquet'
-        # # Context
-        # if os.path.isfile(fname_context):
-        #     b.context_table.to_parquet(fname_context,
-        #                                engine='fastparquet',
-        #                                compression='gzip',
-        #                                append=True)
-        # else:
-        #     b.context_table.to_parquet(fname_context,
-        #                                engine='fastparquet',
-        #                                compression='gzip')
-
-
-
-        print(station)
-    except Exception as e:
-        print(str(e))
-
-
 def verify_data_type_exists(station_number, data_type):
 
     data_type_options = {'Flow': 'Q',
