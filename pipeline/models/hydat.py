@@ -342,8 +342,8 @@ def import_hydat_to_parquet(station_number):
             b.values_table.to_xarray().to_zarr(zarr_dir)
 
         print(station_number)
-    except Exception:
-        print('error: ' + station_number)
+    except Exception as e:
+        print(e)
 
 
 def import_hydat_to_zarr(station):
