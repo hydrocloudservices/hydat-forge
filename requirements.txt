@@ -9,4 +9,5 @@ xarray
 zarr
 sqlalchemy
 pyarrow
+fastparquet
 geopandas
