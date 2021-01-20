@@ -382,18 +382,30 @@ if __name__ == "__main__":
         if verify_data_type_exists(station_number, 'Flow'):
             import_hydat_to_parquet(station_number)
 
-    print('open basin')
-    df = pd.read_parquet(os.path.join(data_dir, 'basin.parquet'), engine='pyarrow')
-    print('send basin')
-    df.to_parquet('s3://hydrology/timeseries/sources/hydat/basin.parquet',
-                  engine='fastparquet',
-                  compression='gzip',
-                  storage_options=storage_options)
-    df = pd.read_parquet(os.path.join(data_dir, 'context.parquet'), engine='pyarrow')
-    df.to_parquet('s3://hydrology/timeseries/sources/hydat/context.parquet',
-                  engine='fastparquet',
-                  compression='gzip',
-                  storage_options=storage_options)
+    import s3fs
+    client_kwargs = {'endpoint_url': 'https://s3.us-east-2.wasabisys.com',
+                     'region_name': 'us-east-2'}
+    config_kwargs = {'max_pool_connections': 30}
+
+    s3 = s3fs.S3FileSystem(profile='default',
+                           client_kwargs=client_kwargs,
+                           config_kwargs=config_kwargs)  # public read
+
+    s3.put(os.path.join(data_dir, 'basin.parquet'),
+           's3://hydrology/timeseries/sources/hydat/basin.parquet')
+
+    # print('open basin')
+    # df = pd.read_parquet(os.path.join(data_dir, 'basin.parquet'), engine='pyarrow')
+    # print('send basin')
+    # df.to_parquet('s3://hydrology/timeseries/sources/hydat/basin.parquet',
+    #               engine='fastparquet',
+    #               compression='gzip',
+    #               storage_options=storage_options)
+    # df = pd.read_parquet(os.path.join(data_dir, 'context.parquet'), engine='pyarrow')
+    # df.to_parquet('s3://hydrology/timeseries/sources/hydat/context.parquet',
+    #               engine='fastparquet',
+    #               compression='gzip',
+    #               storage_options=storage_options)
 
     import subprocess
 
