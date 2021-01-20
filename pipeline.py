@@ -64,7 +64,7 @@ def update_hydat_database(path):
     stations_list = get_available_stations_from_hydat()
     #
     # results = []
-    for station_number in stations_list[0:20]:
+    for station_number in stations_list:
         if verify_data_type_exists(station_number, 'Flow'):
             import_hydat_to_parquet(station_number)
 
@@ -135,10 +135,9 @@ with Flow("Hydat-ETL") as flow:
 
     path = extract_hydat_path(url, ext)
     cond = verify_if_to_date(path)
-    update_hydat_database(path)
-    # with case(cond, False):
-    #     path = download_hydat_file(path)
-    #     update_hydat_database(path)
+    with case(cond, False):
+        path = download_hydat_file(path)
+        update_hydat_database(path)
 
 flow.register(project_name="hydat-file-upload")
 # agent.start()

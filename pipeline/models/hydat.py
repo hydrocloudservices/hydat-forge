@@ -418,7 +418,7 @@ if __name__ == "__main__":
                                                                            endpoint_url,
                                                                            region)
     print(aws_command)
-    subprocess.call(aws_command, shell=True)
+    subprocess.call(aws_command)
     # import zarr
     # zarr.consolidate_metadata(os.path.join(data_dir, 'zarr'))
     # ds = xr.open_zarr(os.path.join(data_dir, 'zarr'), consolidated=True)
