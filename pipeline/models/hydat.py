@@ -385,7 +385,9 @@ if __name__ == "__main__":
         if verify_data_type_exists(station_number, 'Flow'):
             import_hydat_to_parquet(station_number)
 
+    print('open basin')
     df = pd.read_parquet(os.path.join(data_dir, 'basin.parquet'), engine='pyarrow')
+    print('send basin')
     df.to_parquet('s3://hydrology/timeseries/sources/hydat/basin.parquet',
                   engine='fastparquet',
                   compression='gzip',
