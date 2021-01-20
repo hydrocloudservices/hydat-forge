@@ -385,8 +385,8 @@ def import_hydat_to_zarr(station):
 
 
         print(station)
-    except Exception:
-        print('error' + station)
+    except Exception as e:
+        print(str(e))
 
 
 def verify_data_type_exists(station_number, data_type):
