@@ -285,65 +285,62 @@ def import_hydat_to_parquet(station_number):
 
     # if not is_id_bassin_in_db(station):
 
-    try:
-        project_root = '/tmp'
-        data_dir = os.path.join(project_root, 'data')
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir)
-        zarr_dir = os.path.join(data_dir, 'zarr')
-        if not os.path.exists(zarr_dir):
-            os.makedirs(zarr_dir)
-        # TODO : Verify if Flow exists
-        sta = StationParserHYDAT(station_number, 'Flow')
-        b = Basin(sta)
+    project_root = '/tmp'
+    data_dir = os.path.join(project_root, 'data')
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+    zarr_dir = os.path.join(data_dir, 'zarr')
+    if not os.path.exists(zarr_dir):
+        os.makedirs(zarr_dir)
+    # TODO : Verify if Flow exists
+    sta = StationParserHYDAT(station_number, 'Flow')
+    b = Basin(sta)
 
-        fname_basin = os.path.join(data_dir, 'basin.parquet')
-        # Basin
-        if os.path.isfile(fname_basin):
+    fname_basin = os.path.join(data_dir, 'basin.parquet')
+    # Basin
+    if os.path.isfile(fname_basin):
 
-            # Verify if index exists
-            if not (station_number in pd.read_parquet(fname_basin, engine='pyarrow').index):
-                b.basin_table.to_parquet(fname_basin,
-                                         engine='fastparquet',
-                                         compression='gzip',
-                                         append=True)
-        else:
+        # Verify if index exists
+        if not (station_number in pd.read_parquet(fname_basin, engine='pyarrow').index):
             b.basin_table.to_parquet(fname_basin,
                                      engine='fastparquet',
-                                     compression='gzip')
+                                     compression='gzip',
+                                     append=True)
+    else:
+        b.basin_table.to_parquet(fname_basin,
+                                 engine='fastparquet',
+                                 compression='gzip')
 
-        fname_context = os.path.join(data_dir, 'context.parquet')
-        # Context
-        if os.path.isfile(fname_context):
-            b.context_table.to_parquet(fname_context,
-                                       engine='fastparquet',
-                                       compression='gzip',
-                                       append=True)
-        else:
-            b.context_table.to_parquet(fname_context,
-                                       engine='fastparquet',
-                                       compression='gzip')
+    fname_context = os.path.join(data_dir, 'context.parquet')
+    # Context
+    if os.path.isfile(fname_context):
+        b.context_table.to_parquet(fname_context,
+                                   engine='fastparquet',
+                                   compression='gzip',
+                                   append=True)
+    else:
+        b.context_table.to_parquet(fname_context,
+                                   engine='fastparquet',
+                                   compression='gzip')
 
-        # fname_values = '/home/slanglois/Documents/HQ/data/values/{}.parquet'.format(station)
-        # if os.path.isfile(fname_values):
-        #     b.values_table.to_parquet(fname_values,
-        #                              engine='fastparquet',
-        #                              compression='gzip',
-        #                              append=True)
-        # else:
-        #     b.values_table.to_parquet(fname_values,
-        #                                engine='fastparquet',
-        #                                compression='gzip')
+    # fname_values = '/home/slanglois/Documents/HQ/data/values/{}.parquet'.format(station)
+    # if os.path.isfile(fname_values):
+    #     b.values_table.to_parquet(fname_values,
+    #                              engine='fastparquet',
+    #                              compression='gzip',
+    #                              append=True)
+    # else:
+    #     b.values_table.to_parquet(fname_values,
+    #                                engine='fastparquet',
+    #                                compression='gzip')
 
-        if os.path.exists(zarr_dir):
-            b.values_table.to_xarray().to_zarr(zarr_dir,
-                                               mode='a')
-        else:
-            b.values_table.to_xarray().to_zarr(zarr_dir)
+    if os.path.exists(zarr_dir):
+        b.values_table.to_xarray().to_zarr(zarr_dir,
+                                           mode='a')
+    else:
+        b.values_table.to_xarray().to_zarr(zarr_dir)
 
-        print(station_number)
-    except Exception as e:
-        print(e)
+    print(station_number)
 
 
 def verify_data_type_exists(station_number, data_type):
