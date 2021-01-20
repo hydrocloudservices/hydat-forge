@@ -13,7 +13,7 @@ from pipeline.utils import get_url_paths
 @task
 def extract_hydat_path(url, ext):
     # fetch reference data
-    path = get_url_paths(url=url, ext=ext)[1]
+    path = get_url_paths(url=url, ext=ext)
     return path
 
 @task
@@ -86,7 +86,7 @@ temp_config = {
 }
 
 
-with Flow("Hydat-ETL", schedule=schedule) as flow:
+with Flow("Hydat-ETL") as flow:
 
     with set_temporary_config(temp_config):
         if flow.run_config is not None:
@@ -96,7 +96,7 @@ with Flow("Hydat-ETL", schedule=schedule) as flow:
         else:
             labels = []
         agent = agent.local.LocalAgent(
-            labels=labels, max_polls=30
+            labels=labels, max_polls=50
         )
 
     url = 'https://collaboration.cmc.ec.gc.ca/cmc/hydrometrics/www/'
@@ -110,4 +110,5 @@ with Flow("Hydat-ETL", schedule=schedule) as flow:
         update_hydat_database(path)
 
 flow.register(project_name="hydat-file-upload")
-agent.start()
+# agent.start()
+flow.run()

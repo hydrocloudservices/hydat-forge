@@ -37,3 +37,4 @@ jobs:
             prefect auth login --token ${{ secrets.PREFECT_ACCESS_TOKEN }}
             # Register flow
             python pipeline.py
+            aws s3 sync ./pipeline/data/zarr s3://hydrology/timeseries/sources/hydat/values.zarr --endpoint-url=https://www.s3.us-east-1.wasabisys.com --region=us-east-1 --profile=default

@@ -1,13 +1,18 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import pandas as pd
 import numpy as np
-from sqlalchemy import MetaData
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.orm import sessionmaker
 import os
-from pipeline.config import Config
+import zipfile
+from config import Config
 # from hydrodatahub.database.elements.bassin import Bassin
-from pipeline.utils import SQLAlchemyDBConnection, verify_hydat_available
+import geopandas as gpd
+from pipeline.utils import get_url_paths, SQLAlchemyDBConnection, verify_hydat_available
 from pipeline.models.basin import Basin
-
+import multiprocessing
+import dask
+import xarray as xr
 
 @dataclass
 class StationParserHYDAT:
@@ -279,7 +284,6 @@ def import_hydat_to_parquet(station_number):
     """
 
     # if not is_id_bassin_in_db(station):
-    storage_options = {"client_kwargs": {'endpoint_url': 'https://s3.us-east-1.wasabisys.com'}}
 
     try:
         project_root = os.path.dirname(os.path.dirname(__file__))
@@ -299,30 +303,26 @@ def import_hydat_to_parquet(station_number):
 
             # Verify if index exists
             if not (station_number in pd.read_parquet(fname_basin, engine='pyarrow').index):
-                b.basin_table.to_parquet('s3://hydrology/timeseries/sources/hydat/basin.parquet',
+                b.basin_table.to_parquet(fname_basin,
                                          engine='fastparquet',
                                          compression='gzip',
-                                         append=True,
-                                         storage_options=storage_options)
+                                         append=True)
         else:
-            b.basin_table.to_parquet('s3://hydrology/timeseries/sources/hydat/basin.parquet',
+            b.basin_table.to_parquet(fname_basin,
                                      engine='fastparquet',
-                                     compression='gzip',
-                                     storage_options=storage_options)
+                                     compression='gzip')
 
         fname_context = os.path.join(data_dir, 'context.parquet')
         # Context
         if os.path.isfile(fname_context):
-            b.context_table.to_parquet('s3://hydrology/timeseries/sources/hydat/context.parquet',
+            b.context_table.to_parquet(fname_context,
                                        engine='fastparquet',
                                        compression='gzip',
-                                       append=True,
-                                       storage_options=storage_options)
+                                       append=True)
         else:
-            b.context_table.to_parquet('s3://hydrology/timeseries/sources/hydat/context.parquet',
+            b.context_table.to_parquet(fname_context,
                                        engine='fastparquet',
-                                       compression='gzip',
-                                       storage_options=storage_options)
+                                       compression='gzip')
 
         # fname_values = '/home/slanglois/Documents/HQ/data/values/{}.parquet'.format(station)
         # if os.path.isfile(fname_values):
@@ -336,12 +336,10 @@ def import_hydat_to_parquet(station_number):
         #                                compression='gzip')
 
         if os.path.exists(zarr_dir):
-            b.values_table.to_xarray().to_zarr('s3://hydrology/timeseries/sources/hydat/values.zarr',
-                                               mode='a',
-                                               storage_options=storage_options)
+            b.values_table.to_xarray().to_zarr(zarr_dir,
+                                               mode='a')
         else:
-            b.values_table.to_xarray().to_zarr('s3://hydrology/timeseries/sources/hydat/values.zarr',
-                                               storage_options=storage_options)
+            b.values_table.to_xarray().to_zarr(zarr_dir)
 
         print(station_number)
     except Exception:
@@ -418,24 +416,50 @@ def create_basin_table(station_number):
 
 if __name__ == "__main__":
 
+    storage_options = {"client_kwargs": {'endpoint_url': 'https://s3.us-east-1.wasabisys.com',
+                                         'region_name': 'us-east-1'},
+                       "profile": "default"}
+
+    project_root = os.path.dirname(os.path.dirname(__file__))
+    data_dir = os.path.join(project_root, 'data')
     stations_list = get_available_stations_from_hydat()
     #
     # results = []
-    # for station_number in stations_list[0:10]:
-    #     if verify_data_type_exists(station_number, 'Flow'):
-    #         import_hydat_to_parquet(station_number)
+    for station_number in stations_list[0:10]:
+        if verify_data_type_exists(station_number, 'Flow'):
+            import_hydat_to_parquet(station_number)
 
-    storage_options = {"client_kwargs": {'endpoint_url': 'https://s3.us-east-1.wasabisys.com'}}
+    df = pd.read_parquet(os.path.join(project_root, data_dir, 'basin.parquet'), engine='pyarrow')
+    df.to_parquet('s3://hydrology/timeseries/sources/hydat/basin.parquet',
+                  engine='fastparquet',
+                  compression='gzip',
+                  storage_options=storage_options)
+    print(pd.read_parquet('s3://hydrology/timeseries/sources/hydat/basin.parquet',
+                    storage_options=storage_options))
+    df = pd.read_parquet(os.path.join(project_root, data_dir, 'context.parquet'), engine='pyarrow')
+    df.to_parquet('s3://hydrology/timeseries/sources/hydat/context.parquet',
+                  engine='fastparquet',
+                  compression='gzip',
+                  storage_options=storage_options)
+    # import zarr
+    # zarr.consolidate_metadata(os.path.join(data_dir, 'zarr'))
+    # ds = xr.open_zarr(os.path.join(data_dir, 'zarr'), consolidated=True)
+    # ds['data_type'] = ds.data_type.astype('str')
+    #
+    # # Wasabi cloud storage configurations
+    # client_kwargs = {'endpoint_url': 'https://s3.us-east-1.wasabisys.com',
+    #                  'region_name': 'us-east-1'}
+    # config_kwargs = {'max_pool_connections': 30}
+    # import s3fs
+    # s3 = s3fs.S3FileSystem(client_kwargs=client_kwargs,
+    #                        config_kwargs=config_kwargs,
+    #                        profile="default")  # public read
+    # store = s3fs.S3Map(root='s3://hydrology/timeseries/sources/hydat/values.zarr',
+    #                    s3=s3)
+    # ds.to_zarr(store, mode='w')
 
-    sta = StationParserHYDAT(stations_list[0], 'Flow')
-    b = Basin(sta)
 
-    b.basin_table.to_parquet('s3://hydrology/timeseries/sources/hydat/basin.parquet',
-                             engine='fastparquet',
-                             compression='gzip',
-                             storage_options=storage_options)
-    # b.values_table.to_xarray().to_zarr('s3://hydrology/timeseries/sources/hydat/values.zarr',
-    #                                    storage_options=storage_options)
+
 
 
 
