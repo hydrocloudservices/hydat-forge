@@ -441,6 +441,18 @@ if __name__ == "__main__":
                   engine='fastparquet',
                   compression='gzip',
                   storage_options=storage_options)
+
+    import subprocess
+
+    bucket_source = os.path.join(data_dir, 'zarr')
+    bucket_sink = "s3://hydrology/timeseries/sources/hydat/values.zarr "
+    endpoint_url = 'https://s3.us-east-1.wasabisys.com'
+    region='us-east-1'
+    aws_command = "aws s3 sync {} {} --endpoint-url={} --region={}--profile=default".format(bucket_source,
+                                                                                            bucket_sink,
+                                                                                            endpoint_url,
+                                                                                            region)
+    subprocess.call(aws_command, shell=True)
     # import zarr
     # zarr.consolidate_metadata(os.path.join(data_dir, 'zarr'))
     # ds = xr.open_zarr(os.path.join(data_dir, 'zarr'), consolidated=True)
