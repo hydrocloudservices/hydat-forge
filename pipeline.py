@@ -59,12 +59,43 @@ def download_hydat_file(path):
 
 @task
 def update_hydat_database(path):
+    project_root = '/tmp'
+    data_dir = os.path.join(project_root, 'data')
     stations_list = get_available_stations_from_hydat()
     #
     # results = []
     for station_number in stations_list[0:10]:
         if verify_data_type_exists(station_number, 'Flow'):
             import_hydat_to_parquet(station_number)
+
+    storage_options = {"client_kwargs": {'endpoint_url': 'https://s3.us-east-2.wasabisys.com',
+                                         'region_name': 'us-east-2'}}
+    import pandas as pd
+    print('open basin')
+    df = pd.read_parquet(os.path.join(data_dir, 'basin.parquet'), engine='pyarrow')
+    print('send basin')
+    df.to_parquet('s3://hydrology/timeseries/sources/hydat/basin.parquet',
+                  engine='fastparquet',
+                  compression='gzip',
+                  storage_options=storage_options)
+    df = pd.read_parquet(os.path.join(data_dir, 'context.parquet'), engine='pyarrow')
+    df.to_parquet('s3://hydrology/timeseries/sources/hydat/context.parquet',
+                  engine='fastparquet',
+                  compression='gzip',
+                  storage_options=storage_options)
+
+    import subprocess
+
+    bucket_source = os.path.join(data_dir, 'zarr')
+    bucket_sink = "s3://hydrology/timeseries/sources/hydat/values.zarr "
+    endpoint_url = 'https://s3.us-east-2.wasabisys.com'
+    region='us-east-2'
+    aws_command = "aws s3 sync {} {} --endpoint-url={} --region={}".format(bucket_source,
+                                                                           bucket_sink,
+                                                                           endpoint_url,
+                                                                           region)
+    print(aws_command)
+    subprocess.call(aws_command, shell=True)
 
 
 # schedule to run every 12 hours
