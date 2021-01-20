@@ -104,10 +104,10 @@ with Flow("Hydat-ETL") as flow:
 
     path = extract_hydat_path(url, ext)
     cond = verify_if_to_date(path)
-
-    with case(cond, False):
-        path = download_hydat_file(path)
-        update_hydat_database(path)
+    update_hydat_database(path)
+    # with case(cond, False):
+    #     path = download_hydat_file(path)
+    #     update_hydat_database(path)
 
 flow.register(project_name="hydat-file-upload")
 # agent.start()
