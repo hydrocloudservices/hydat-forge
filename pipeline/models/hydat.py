@@ -391,8 +391,6 @@ if __name__ == "__main__":
                   engine='fastparquet',
                   compression='gzip',
                   storage_options=storage_options)
-    print(pd.read_parquet('s3://hydrology/timeseries/sources/hydat/basin.parquet',
-                    storage_options=storage_options))
     df = pd.read_parquet(os.path.join(project_root, data_dir, 'context.parquet'), engine='pyarrow')
     df.to_parquet('s3://hydrology/timeseries/sources/hydat/context.parquet',
                   engine='fastparquet',
