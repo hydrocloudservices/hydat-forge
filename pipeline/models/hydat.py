@@ -373,9 +373,8 @@ def create_basin_table(station_number):
 
 if __name__ == "__main__":
 
-    storage_options = {"client_kwargs": {'endpoint_url': 'https://s3.us-east-1.wasabisys.com',
-                                         'region_name': 'us-east-1'},
-                       "profile": "default"}
+    storage_options = {"client_kwargs": {'endpoint_url': 'https://s3.us-east-2.wasabisys.com',
+                                         'region_name': 'us-east-2'}}
 
     project_root = '/tmp'
     data_dir = os.path.join(project_root, 'data')
@@ -401,12 +400,13 @@ if __name__ == "__main__":
 
     bucket_source = os.path.join(data_dir, 'zarr')
     bucket_sink = "s3://hydrology/timeseries/sources/hydat/values.zarr "
-    endpoint_url = 'https://s3.us-east-1.wasabisys.com'
-    region='us-east-1'
-    aws_command = "aws s3 sync {} {} --endpoint-url={} --region={}--profile=default".format(bucket_source,
-                                                                                            bucket_sink,
-                                                                                            endpoint_url,
-                                                                                            region)
+    endpoint_url = 'https://s3.us-east-2.wasabisys.com'
+    region='us-east-2'
+    aws_command = "aws s3 sync {} {} --endpoint-url={} --region={}".format(bucket_source,
+                                                                           bucket_sink,
+                                                                           endpoint_url,
+                                                                           region)
+    print(aws_command)
     subprocess.call(aws_command, shell=True)
     # import zarr
     # zarr.consolidate_metadata(os.path.join(data_dir, 'zarr'))
