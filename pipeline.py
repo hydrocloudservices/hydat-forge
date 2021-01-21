@@ -100,7 +100,7 @@ def update_hydat_database(path):
                            config_kwargs=config_kwargs)
     store = s3fs.S3Map(root=bucket_sink,
                        s3=s3)
-    zarr.consolidate_metadata(store)
+
 
     aws_command = "aws s3 sync {} {} --endpoint-url={} --region={}".format(bucket_source,
                                                                            bucket_sink,
@@ -108,6 +108,8 @@ def update_hydat_database(path):
                                                                            region)
     print(aws_command)
     subprocess.call(aws_command, shell=True)
+
+    zarr.consolidate_metadata(store)
 
 
 # schedule to run every 12 hours
