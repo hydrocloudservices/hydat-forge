@@ -1,10 +1,15 @@
 from prefect import task, Flow, case, agent
 import prefect
 from prefect.schedules import IntervalSchedule
+import pandas as pd
 from datetime import datetime, timedelta
 import urllib.request
 import s3fs
 import os
+import subprocess
+import s3fs
+import zarr
+
 from pipeline.models.hydat import get_available_stations_from_hydat, import_hydat_to_parquet, verify_data_type_exists
 from prefect.utilities.configuration import set_temporary_config
 from pipeline.utils import get_url_paths
@@ -70,10 +75,8 @@ def update_hydat_database(path):
 
     storage_options = {"client_kwargs": {'endpoint_url': 'https://s3.us-east-2.wasabisys.com',
                                          'region_name': 'us-east-2'}}
-    import pandas as pd
-    print('open basin')
+
     df = pd.read_parquet(os.path.join(data_dir, 'basin.parquet'), engine='pyarrow')
-    print('send basin')
     df.to_parquet('s3://hydrology/timeseries/sources/hydat/basin.parquet',
                   engine='fastparquet',
                   compression='gzip',
@@ -84,12 +87,21 @@ def update_hydat_database(path):
                   compression='gzip',
                   storage_options=storage_options)
 
-    import subprocess
+    client_kwargs = {'endpoint_url': 'https://s3.us-east-2.wasabisys.com',
+                     'region_name': 'us-east-2'}
+    config_kwargs = {'max_pool_connections': 30}
 
     bucket_source = os.path.join(data_dir, 'zarr')
     bucket_sink = "s3://hydrology/timeseries/sources/hydat/values.zarr "
     endpoint_url = 'https://s3.us-east-2.wasabisys.com'
     region='us-east-2'
+
+    s3 = s3fs.S3FileSystem(client_kwargs=client_kwargs,
+                           config_kwargs=config_kwargs)
+    store = s3fs.S3Map(root=bucket_sink,
+                       s3=s3)
+    zarr.consolidate_metadata(store)
+
     aws_command = "aws s3 sync {} {} --endpoint-url={} --region={}".format(bucket_source,
                                                                            bucket_sink,
                                                                            endpoint_url,

@@ -209,7 +209,7 @@ class Basin:
     @property
     def values_table(self) -> pd.DataFrame:
         df = self.station.values.reset_index()
-        df['data_type'] = self.station.data_type
+        df['station_number'] = self.station.station_number
         df.rename(columns={'index': 'date',
-                           'value': self.station.station_number}, inplace=True)
-        return df.set_index(['data_type','date'])
+                           'value': 'flow'}, inplace=True)
+        return df.set_index(['station_number','date'])
