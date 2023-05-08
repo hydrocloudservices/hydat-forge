@@ -2,19 +2,19 @@ name: CI
 
 on:
   push:
-  schedule:
-    - cron: '0 6 * * *'
+  # schedule:
+  #   - cron: '0 6 * * *'
 
 jobs:
   run:
-    name: Hydat-Forge Data Pipeline
+    name: DEH-Forge Data Pipeline
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2.3.3
       - name: Setup Python
         uses: actions/setup-python@v2.1.3
         with:
-          python-version: 3.8
+          python-version: "3.10"
           architecture: x64
       - name: Install dependencies
         run: |
@@ -27,13 +27,8 @@ jobs:
             [default]
             aws_access_key_id = ${{ secrets.AWS_ACCESS_KEY_ID }}
             aws_secret_access_key = ${{ secrets.AWS_SECRET_KEY_ID }}
-            region = us-east-2
+            region = us-east-1
             source_profile = default" > ~/.aws/credentials
       - name: Run Pipeline
         run: |
-            # Login
-            prefect backend cloud
-            export PREFECT__CLOUD__AGENT__AUTH_TOKEN=${{ secrets.PREFECT_CLOUD_AGENT_AUTH_TOKEN }}
-            prefect auth login --token ${{ secrets.PREFECT_ACCESS_TOKEN }}
-            # Register flow
             python pipeline.py
