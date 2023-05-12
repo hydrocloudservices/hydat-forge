@@ -14,4 +14,4 @@ class Config(object):
                        }
 
    
-    HYDAT_ZARR_BUCKET = f"hydrometric/source/hydat/zarr/{datetime.now().strftime('%Y-%m-%d')}/"
+    HYDAT_ZARR_BUCKET = f"hydrometric/source/hydat/zarr/"

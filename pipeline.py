@@ -412,11 +412,13 @@ def post_process_dims(dates):
     zarr.consolidate_metadata(store)
 
 @ task()
-def push_data_to_bucket():
+def push_data_to_bucket(url):
     lfs = LocalFileSystem()
     target = FSSpecTarget(fs=lfs, root_path='/tmp/hydat/zarr')
     fs = fsspec.filesystem('s3', **Config.STORAGE_OPTIONS)
-    fs.put(target.root_path, os.path.dirname(Config.HYDAT_ZARR_BUCKET), recursive=True)
+    fs.put(target.root_path, os.path.dirname(os.path.join(Config.HYDAT_ZARR_BUCKET, 
+                                                          url.split('_')[-1].split('.')[0] + '/')), 
+                                                          recursive=True)
     shutil.rmtree(target.root_path)
 
 with Flow("Hydat-ETL") as flow:
@@ -427,7 +429,7 @@ with Flow("Hydat-ETL") as flow:
     dates = create_hydat_dataset(upstream_tasks=[processed])
     consolidated = consolidate_coords(upstream_tasks=[dates])
     processed = post_process_dims(dates, upstream_tasks=[consolidated])
-    push_data_to_bucket(upstream_tasks=[processed])
+    push_data_to_bucket(url, upstream_tasks=[processed])
 
     
 
