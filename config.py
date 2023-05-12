@@ -1,27 +1,17 @@
+from datetime import datetime, timedelta
 import os
-basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config(object):
-    # SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
-    # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-    #                           'sqlite:///' + os.path.join(basedir, 'hydrodatahub.db')
-    # SQLALCHEMY_DATABASE_URI_PUBLIC = os.environ.get('DATABASE_URL_PUBLIC') or \
-    #                                  'sqlite:///' + os.path.join(basedir, 'hydrodatahub.db')
-    # SQLALCHEMY_TRACK_MODIFICATIONS = False
-    # LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
-    # ADMINS = ['your-email@example.com']
-    # LANGUAGES = ['en']
-    # REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
-    # SHARABLE_DB = os.environ.get('SHARABLE_DB')
-    SQLITE_HYDAT_FOLDER = os.path.join(basedir, 'hydrodatahub/database/offline_data/tmp')
-    GEOJSON_BUCKET = 'https://s3.us-east-2.wasabisys.com/watersheds-polygons'
 
-    HYDAT_URL = 'https://collaboration.cmc.ec.gc.ca/cmc/hydrometrics/www/'
-    HYDAT_FORMAT = 'zip'
-    HYDAT_LOCAL_FILE = "/tmp/Hydat.sqlite3"
-    SQLITE_LOCAL_FILE = "sqlite:///" + os.path.join(HYDAT_LOCAL_FILE)
+    CLIENT_KWARGS = {'endpoint_url': 'https://s3.us-east-1.wasabisys.com',
+                     'region_name': 'us-east-1'}
+    CONFIG_KWARGS = {'max_pool_connections': 30}
+    PROFILE = 'default'
+    STORAGE_OPTIONS = {'profile': PROFILE,
+                       'client_kwargs': CLIENT_KWARGS,
+                       'config_kwargs': CONFIG_KWARGS
+                       }
 
-    # ############## PRIVATE ################
-    # HQE_LECAGY_FOLDER = os.path.join(basedir, 'hydrodatahub/database/offline_data/hqe_legacy')
-    # CONCAT_FILENAME = os.path.join(basedir, 'hydrodatahub/database/offline_data/concatenations.csv')
+   
+    HYDAT_ZARR_BUCKET = f"hydrometric/source/hydat/zarr/{datetime.now().strftime('%Y-%m-%d')}/"
