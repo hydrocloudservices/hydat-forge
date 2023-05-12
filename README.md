@@ -1,2 +1,2 @@
 # hydat-forge
-![CI](https://github.com/hydrocloudservices/hydat-forge/workflows/CI/badge.svg)
+![CI](https://github.com/hydrocloudservices/deh-forge/workflows/CI/badge.svg)
